@@ -1,7 +1,13 @@
 const express = require("express");
 const { MongoClient } = require('mongodb');
+const cors = require("cors");
+
 const app = express();
 const port = process.env.PORT || 5000;
+
+// middleware
+app.use(cors());
+app.use(express.json());
 
 // user: mongodbAtlasUser1
 // pass: tuJS4gQn3g99EcFs
@@ -27,18 +33,22 @@ client.connect(err => {
 async function run() {
     try {
         await client.connect();
-        const collection = client.db("app").collection("users");
-        // create a document to insert
-        const user = {
-            name: "taki",
-            email: "taki@yahoo.com",
-            phone: "01xxx083378"
-        }
+        const usersCollection = client.db("app").collection("users");
 
-        const result = await collection.insertOne(user);
-        console.log(`A document was inserted with the _id: ${result.insertedId}`);
+        // POST API
+        app.post('/users', async (req, res) => {
+            const newUser = req.body;
+            result = await usersCollection.insertOne(newUser);
+
+            // console.log("Hitting POST", req.body);
+            res.json(result);
+        })
+
+        // const result = await collection.insertOne(user);
+        // console.log(`A document was inserted with the _id: ${result.insertedId}`);
+        // console.log(result);
     } finally {
-        await client.close();
+        // await client.close();
     }
 }
 run().catch(console.dir);
